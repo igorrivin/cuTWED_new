@@ -1,0 +1,6 @@
+[build_ext]
+include_dirs = @CMAKE_INSTALL_PREFIX@/include
+library_dirs = @CMAKE_INSTALL_PREFIX@/lib
+
+[options]
+zip_safe = False

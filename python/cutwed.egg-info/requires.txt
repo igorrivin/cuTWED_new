@@ -1,0 +1,33 @@
+numpy>=1.20.0
+
+[all]
+numpy>=1.20.0
+torch>=1.12.0
+jax>=0.3.0
+jaxlib>=0.3.0
+
+[cuda]
+pycuda>=2022.1
+
+[cupy]
+
+[cupy:platform_system != "Darwin"]
+cupy-cuda11x>=11.0.0
+
+[cupy:platform_system == "Darwin"]
+cupy>=11.0.0
+
+[dev]
+pytest>=6.0.0
+flake8>=4.0.0
+black>=22.0.0
+isort>=5.0.0
+mypy>=0.9.0
+matplotlib>=3.5.0
+
+[jax]
+jax>=0.3.0
+jaxlib>=0.3.0
+
+[torch]
+torch>=1.12.0

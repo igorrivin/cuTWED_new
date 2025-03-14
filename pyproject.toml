@@ -1,0 +1,121 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "cmake>=3.18",
+    "ninja; platform_system!='Windows'",
+    "scikit-build>=0.12",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cutwed"
+version = "3.0.0"
+description = "A linear memory CUDA algorithm for Time Warp Edit Distance with multiple backends"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+    {name = "Garrett Wright", email = "garrett@gestaltgp.com"},
+    {name = "cuTWED Contributors"}
+]
+maintainers = [
+    {name = "Igor Rivin", email = "igorrivin@gmail.com"}
+]
+keywords = [
+    "time-series", 
+    "distance", 
+    "similarity", 
+    "cuda", 
+    "gpu", 
+    "time-warp-edit-distance"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: C++",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.20.0",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "pycuda>=2022.1",
+]
+cupy = [
+    "cupy-cuda11x>=11.0.0; platform_system!='Darwin'",
+    "cupy>=11.0.0; platform_system=='Darwin'",
+]
+torch = [
+    "torch>=1.12.0",
+]
+jax = [
+    "jax>=0.3.0",
+    "jaxlib>=0.3.0",
+]
+all = [
+    "numpy>=1.20.0",
+    "torch>=1.12.0",
+    "jax>=0.3.0",
+    "jaxlib>=0.3.0",
+]
+dev = [
+    "pytest>=6.0.0",
+    "flake8>=4.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "mypy>=0.9.0",
+    "matplotlib>=3.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/garrettwrong/cuTWED"
+Issues = "https://github.com/garrettwrong/cuTWED/issues"
+Documentation = "https://github.com/garrettwrong/cuTWED/refactored/docs"
+Repository = "https://github.com/garrettwrong/cuTWED.git"
+
+[tool.scikit-build]
+cmake.minimum-version = "3.18"
+cmake.build-type = "Release"
+cmake.verbose = true
+wheel.expand-macos-universal-tags = true
+
+[tool.setuptools]
+packages = ["cutwed"]
+package-dir = {"" = "python"}
+
+[tool.black]
+line-length = 100
+target-version = ["py37", "py38", "py39", "py310", "py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = "cutwed.backends.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"

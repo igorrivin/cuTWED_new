@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.py
+python/cutwed/__init__.py
+python/cutwed.egg-info/PKG-INFO
+python/cutwed.egg-info/SOURCES.txt
+python/cutwed.egg-info/dependency_links.txt
+python/cutwed.egg-info/not-zip-safe
+python/cutwed.egg-info/requires.txt
+python/cutwed.egg-info/top_level.txt
