@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# For better debugging in Colab
 import os
 import sys
 import subprocess
 import platform
+print(f"Python version: {sys.version}")
+print(f"Platform: {platform.platform()}")
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
@@ -41,15 +44,35 @@ class CMakeBuild(build_ext):
                 print("Forcing CUDA build as requested by FORCE_CUDA environment variable")
             elif platform.system() == 'Linux':
                 # Try to detect NVIDIA GPU on Linux
-                result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
-                cuda_available = result.returncode == 0
-                if cuda_available:
-                    print("NVIDIA GPU detected, building with CUDA support")
-                else:
-                    print("No NVIDIA GPU detected, building without CUDA support")
+                print("Checking for NVIDIA GPU...")
+                try:
+                    # First try nvidia-smi
+                    print("Running nvidia-smi to detect GPU...")
+                    result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
+                    if result.returncode == 0:
+                        print(f"nvidia-smi output: {result.stdout[:100]}...")
+                        cuda_available = True
+                        print("NVIDIA GPU detected via nvidia-smi, building with CUDA support")
+                    else:
+                        # If nvidia-smi fails, try nvcc
+                        print(f"nvidia-smi failed with: {result.stderr[:100]}...")
+                        print("Trying nvcc...")
+                        result = subprocess.run(['nvcc', '--version'], capture_output=True, text=True)
+                        if result.returncode == 0:
+                            print(f"nvcc version: {result.stdout[:100]}...")
+                            cuda_available = True
+                            print("CUDA compiler detected via nvcc, building with CUDA support")
+                        else:
+                            print(f"nvcc check failed with: {result.stderr[:100]}...")
+                            print("No NVIDIA GPU detected, building without CUDA support")
+                except FileNotFoundError as e:
+                    print(f"GPU detection command not found: {e}")
+                    print("No NVIDIA GPU tools found, building without CUDA support")
         except Exception as e:
             print(f"Error checking for CUDA: {e}")
-            print("Building without CUDA support")
+            print(f"Exception type: {type(e).__name__}")
+            print(f"Exception args: {e.args}")
+            print("Building without CUDA support due to error")
         
         cmake_args = [
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
@@ -85,9 +108,24 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
             
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
-        subprocess.check_call(['cmake', '--install', '.'], cwd=self.build_temp)
+        try:
+            print(f"Running CMake configure with args: {cmake_args}")
+            subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+            
+            print(f"Running CMake build with args: {build_args}")
+            subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+            
+            print("Running CMake install")
+            subprocess.check_call(['cmake', '--install', '.'], cwd=self.build_temp)
+        except subprocess.CalledProcessError as e:
+            print(f"Build failed with exit code {e.returncode}")
+            # Try to print CMake error log if available
+            error_log = os.path.join(self.build_temp, 'CMakeFiles', 'CMakeError.log')
+            if os.path.exists(error_log):
+                print("CMake error log:")
+                with open(error_log, 'r') as f:
+                    print(f.read())
+            raise
 
 
 setup(

@@ -61,8 +61,16 @@ endif()
 
 # Find CUDA libraries if enabled
 if(CUTWED_USE_CUDA)
-    find_package(CUDAToolkit REQUIRED)
-    target_link_libraries(cuTWED PRIVATE CUDA::cudart CUDA::cublas)
+    # Try to find CUDA toolkit, but don't fail if not found
+    find_package(CUDAToolkit QUIET)
+    if(CUDAToolkit_FOUND)
+        message(STATUS "CUDA Toolkit found: ${CUDAToolkit_VERSION}")
+        target_link_libraries(cuTWED PRIVATE CUDA::cudart CUDA::cublas)
+        target_compile_definitions(cuTWED PRIVATE CUTWED_WITH_CUDA)
+    else()
+        message(WARNING "CUDA Toolkit not found, disabling CUDA support")
+        set(CUTWED_USE_CUDA OFF)
+    endif()
 endif()
 
 # Add compile definitions

@@ -24,10 +24,14 @@ def get_available_backends() -> List[str]:
     available = []
     for name, backend_dict in _BACKENDS.items():
         try:
-            _load_backend(name)
-            available.append(name)
-        except (ImportError, Exception):
-            pass
+            backend_module = _load_backend(name)
+            if backend_module is not None:
+                available.append(name)
+                print(f"Successfully loaded backend: {name}")
+            else:
+                print(f"Failed to load backend: {name}")
+        except Exception as e:
+            print(f"Error loading backend {name}: {type(e).__name__}: {e}")
     return available
 
 
