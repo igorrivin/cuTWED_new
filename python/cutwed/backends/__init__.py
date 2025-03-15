@@ -99,12 +99,22 @@ def get_backend_name() -> str:
     return _CURRENT_BACKEND
 
 
-# Register available backends
+# Register available backends with optimized priorities
 register_backend("numpy", "cutwed.backends.numpy_backend", priority=0)
-register_backend("pytorch", "cutwed.backends.torch_backend", priority=10)
-register_backend("jax", "cutwed.backends.jax_backend", priority=20)
+
+# On Mac with Metal, JAX tends to be much faster than PyTorch
+import platform
+if platform.system() == 'Darwin' and platform.processor() == 'arm':
+    # Prioritize JAX on Apple Silicon
+    register_backend("jax", "cutwed.backends.jax_backend", priority=40)  
+    register_backend("pytorch", "cutwed.backends.torch_backend", priority=10)  # Lower priority on Mac
+else:
+    # Standard priorities for other platforms
+    register_backend("pytorch", "cutwed.backends.torch_backend", priority=10)
+    register_backend("jax", "cutwed.backends.jax_backend", priority=20)
+
 register_backend("cupy", "cutwed.backends.cupy_backend", priority=30)
-register_backend("cuda", "cutwed.backends.cuda_backend", priority=40)
+register_backend("cuda", "cutwed.backends.cuda_backend", priority=50)  # Highest priority
 
 # Try to set the best available backend
 try:

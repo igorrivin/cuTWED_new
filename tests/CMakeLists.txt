@@ -3,16 +3,19 @@
 # Enable testing
 enable_testing()
 
-# Add test executable
-add_executable(test_cutwed test_cutwed.cu)
-target_link_libraries(test_cutwed PRIVATE cuTWED CUDA::cudart CUDA::cublas)
-set_target_properties(test_cutwed PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON
-)
+# Only add CUDA-specific tests if CUDA is enabled
+if(CUTWED_USE_CUDA)
+    # Add test executable for CUDA
+    add_executable(test_cutwed test_cutwed.cu)
+    target_link_libraries(test_cutwed PRIVATE cuTWED CUDA::cudart CUDA::cublas)
+    set_target_properties(test_cutwed PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+    )
 
-# Add tests
-add_test(NAME TestBasic COMMAND test_cutwed --basic)
-add_test(NAME TestBatch COMMAND test_cutwed --batch)
+    # Add CUDA tests
+    add_test(NAME TestBasic COMMAND test_cutwed --basic)
+    add_test(NAME TestBatch COMMAND test_cutwed --batch)
+endif()
 
 # Add Python tests if Python bindings are enabled
 if(CUTWED_BUILD_PYTHON)

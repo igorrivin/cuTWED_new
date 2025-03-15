@@ -33,11 +33,30 @@ class CMakeBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
+        # Check if CUDA is available
+        cuda_available = False
+        try:
+            if os.environ.get('FORCE_CUDA', '0') == '1':
+                cuda_available = True
+                print("Forcing CUDA build as requested by FORCE_CUDA environment variable")
+            elif platform.system() == 'Linux':
+                # Try to detect NVIDIA GPU on Linux
+                result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
+                cuda_available = result.returncode == 0
+                if cuda_available:
+                    print("NVIDIA GPU detected, building with CUDA support")
+                else:
+                    print("No NVIDIA GPU detected, building without CUDA support")
+        except Exception as e:
+            print(f"Error checking for CUDA: {e}")
+            print("Building without CUDA support")
+        
         cmake_args = [
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
             '-DCMAKE_INSTALL_PREFIX=' + extdir,
             '-DPYTHON_EXECUTABLE=' + sys.executable,
             '-DCUTWED_BUILD_PYTHON=ON',
+            f'-DCUTWED_USE_CUDA={str(cuda_available).upper()}',
         ]
 
         # Pass various options to CMake
@@ -56,7 +75,7 @@ class CMakeBuild(build_ext):
         else:
             cmake_args += ['-G', 'Ninja']
         
-        build_args += ['--', '-j']
+        build_args += ['--', '-j4']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
